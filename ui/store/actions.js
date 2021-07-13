@@ -1240,25 +1240,34 @@ export function addToken(
   image,
   dontShowLoadingIndicator,
 ) {
-  return (dispatch) => {
+  return async (dispatch) => {
     if (!address) {
       throw new Error('MetaMask - Cannot add token without address');
     }
     if (!dontShowLoadingIndicator) {
       dispatch(showLoadingIndication());
     }
-    return new Promise((resolve, reject) => {
-      background.addToken(address, symbol, decimals, image, (err, tokens) => {
-        dispatch(hideLoadingIndication());
-        if (err) {
-          dispatch(displayWarning(err.message));
-          reject(err);
-          return;
-        }
-        dispatch(updateTokens(tokens));
-        resolve(tokens);
-      });
-    });
+    try {
+      await promisifiedBackground.addToken(address, symbol, decimals, image);
+    } catch (error) {
+      log.error(error);
+      dispatch(displayWarning(error.message));
+      return;
+    }
+    dispatch(updateTokens(tokens));
+    resolve(tokens);
+    // return new Promise((resolve, reject) => {
+    //   background.addToken(address, symbol, decimals, image, (err, tokens) => {
+    //     dispatch(hideLoadingIndication());
+    //     if (err) {
+    //       dispatch(displayWarning(err.message));
+    //       reject(err);
+    //       return;
+    //     }
+    //     dispatch(updateTokens(tokens));
+    //     resolve(tokens);
+    //   });
+    // });
   };
 }
 
