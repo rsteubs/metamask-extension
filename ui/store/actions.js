@@ -1306,6 +1306,41 @@ export function addTokens(tokens) {
   };
 }
 
+export function rejectWatchAsset(suggestedAssetID) {
+  return async (dispatch) => {
+    dispatch(showLoadingIndication());
+    try {
+      await promisifiedBackground.rejectWatchAsset(suggestedAssetID);
+    } catch (error) {
+      log.error(error);
+      dispatch(displayWarning(error.message));
+      return;
+    }
+    if (getEnvironmentType() === ENVIRONMENT_TYPE_NOTIFICATION) {
+      global.platform.closeCurrentWindow();
+      return;
+    }
+  };
+}
+
+
+export function acceptWatchAsset(suggestedAssetID) {
+  return async (dispatch) => {
+    dispatch(showLoadingIndication());
+    try {
+      await promisifiedBackground.acceptWatchAsset(suggestedAssetID);
+    } catch (error) {
+      log.error(error);
+      dispatch(displayWarning(error.message));
+      return;
+    }
+    if (getEnvironmentType() === ENVIRONMENT_TYPE_NOTIFICATION) {
+      global.platform.closeCurrentWindow();
+      return;
+    }
+  };
+}
+
 export function removeSuggestedTokens() {
   return (dispatch) => {
     dispatch(showLoadingIndication());
@@ -1317,7 +1352,7 @@ export function removeSuggestedTokens() {
         }
         dispatch(clearPendingTokens());
         if (getEnvironmentType() === ENVIRONMENT_TYPE_NOTIFICATION) {
-          // global.platform.closeCurrentWindow();
+          global.platform.closeCurrentWindow();
           return;
         }
         resolve(suggestedTokens);

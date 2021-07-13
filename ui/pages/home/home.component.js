@@ -101,10 +101,9 @@ export default class Home extends PureComponent {
       swapsFetchParams,
       pendingConfirmations,
     } = this.props;
-    console.log("SUGGESTEDASSETS:", suggestedAssets)
     this.setState({ mounted: true });
     if (isNotification && totalUnapprovedCount === 0) {
-      // global.platform.closeCurrentWindow();
+      global.platform.closeCurrentWindow();
     } else if (!isNotification && showAwaitingSwapScreen) {
       history.push(AWAITING_SWAP_ROUTE);
     } else if (!isNotification && haveSwapsQuotes) {
@@ -116,7 +115,6 @@ export default class Home extends PureComponent {
     } else if (unconfirmedTransactionsCount > 0) {
       history.push(CONFIRM_TRANSACTION_ROUTE);
     } else if (suggestedAssets.length > 0) {
-      console.log("YOOOOOOOOO")
       history.push(CONFIRM_ADD_SUGGESTED_TOKEN_ROUTE);
     } else if (pendingConfirmations.length > 0) {
       history.push(CONFIRMATION_V_NEXT_ROUTE);

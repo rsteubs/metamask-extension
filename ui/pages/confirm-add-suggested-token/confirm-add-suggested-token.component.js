@@ -16,29 +16,25 @@ export default class ConfirmAddSuggestedToken extends Component {
     history: PropTypes.object,
     addToken: PropTypes.func,
     mostRecentOverviewPage: PropTypes.string.isRequired,
-    pendingTokens: PropTypes.object,
+    suggestedAssets: PropTypes.array,
     removeSuggestedTokens: PropTypes.func,
     tokens: PropTypes.array,
   };
 
   componentDidMount() {
-    const { mostRecentOverviewPage, pendingTokens = {}, history } = this.props;
-    debugger
-    this._checkPendingTokens();
+    this._checksuggestedAssets();
   }
 
   componentDidUpdate() {
-    this._checkPendingTokens();
+    this._checksuggestedAssets();
   }
 
-  _checkPendingTokens() {
-    const { mostRecentOverviewPage, pendingTokens = {}, history } = this.props;
+  _checksuggestedAssets() {
+    const { mostRecentOverviewPage, suggestedAssets = [], history } = this.props;
 
-    if (Object.keys(pendingTokens).length > 0) {
+    if (suggestedAssets.length > 0) {
       return;
     }
-    console.log("pendingTokens", pendingTokens)
-
     if (getEnvironmentType() === ENVIRONMENT_TYPE_NOTIFICATION) {
       global.platform.closeCurrentWindow();
     } else {
@@ -53,16 +49,15 @@ export default class ConfirmAddSuggestedToken extends Component {
   render() {
     const {
       addToken,
-      pendingTokens,
+      suggestedAssets,
       tokens,
-      removeSuggestedTokens,
+      rejectWatchAsset,
       history,
       mostRecentOverviewPage,
     } = this.props;
-    const pendingTokenKey = Object.keys(pendingTokens)[0];
-    const pendingToken = pendingTokens[pendingTokenKey];
-    const hasTokenDuplicates = this.checkTokenDuplicates(pendingTokens, tokens);
-    const reusesName = this.checkNameReuse(pendingTokens, tokens);
+    const [ { asset, id } ] = suggestedAssets;
+    const hasTokenDuplicates = this.checkTokenDuplicates(suggestedAssets, tokens);
+    const reusesName = this.checkNameReuse(suggestedAssets, tokens);
 
     return (
       <div className="page-container">
@@ -93,31 +88,25 @@ export default class ConfirmAddSuggestedToken extends Component {
               </div>
             </div>
             <div className="confirm-add-token__token-list">
-              {Object.entries(pendingTokens).map(([address, token]) => {
-                const { name, symbol, image } = token;
-
-                return (
                   <div
                     className="confirm-add-token__token-list-item"
-                    key={address}
+                    key={asset.address}
                   >
                     <div className="confirm-add-token__token confirm-add-token__data">
                       <Identicon
                         className="confirm-add-token__token-icon"
                         diameter={48}
-                        address={address}
-                        image={image}
+                        address={asset.address}
+                        image={asset.image}
                       />
                       <div className="confirm-add-token__name">
-                        {this.getTokenName(name, symbol)}
+                        {this.getTokenName(asset.name, asset.symbol)}
                       </div>
                     </div>
                     <div className="confirm-add-token__balance">
-                      <TokenBalance token={token} />
+                      <TokenBalance token={asset} />
                     </div>
                   </div>
-                );
-              })}
             </div>
           </div>
         </div>
@@ -128,7 +117,7 @@ export default class ConfirmAddSuggestedToken extends Component {
               large
               className="page-container__footer-button"
               onClick={() => {
-                removeSuggestedTokens().then(() =>
+                rejectWatchAsset(id).then(() =>
                   history.push(mostRecentOverviewPage),
                 );
               }}
@@ -139,10 +128,9 @@ export default class ConfirmAddSuggestedToken extends Component {
               type="secondary"
               large
               className="page-container__footer-button"
-              disabled={pendingTokens.length === 0}
+              disabled={suggestedAssets.length === 0}
               onClick={() => {
-                addToken(pendingToken)
-                  .then(() => removeSuggestedTokens())
+                acceptWatchAsset(id)
                   .then(() => {
                     this.context.trackEvent({
                       event: 'Token Added',
@@ -167,8 +155,8 @@ export default class ConfirmAddSuggestedToken extends Component {
     );
   }
 
-  checkTokenDuplicates(pendingTokens, tokens) {
-    const pending = Object.keys(pendingTokens);
+  checkTokenDuplicates(suggestedAssets, tokens) {
+    const pending = suggestedAssets.map(token => token.address);
     const existing = tokens.map((token) => token.address);
     const dupes = pending.filter((proposed) => {
       return existing.includes(proposed);
@@ -178,14 +166,13 @@ export default class ConfirmAddSuggestedToken extends Component {
   }
 
   /**
-   * Returns true if any pendingTokens both:
+   * Returns true if any suggestedAssets both:
    * - Share a symbol with an existing `tokens` member.
    * - Does not share an address with that same `tokens` member.
    * This should be flagged as possibly deceptive or confusing.
    */
-  checkNameReuse(pendingTokens, tokens) {
-    const duplicates = Object.keys(pendingTokens)
-      .map((addr) => pendingTokens[addr])
+  checkNameReuse(suggestedAssets, tokens) {
+    const duplicates = suggestedAssets
       .filter((token) => {
         const dupes = tokens
           .filter((old) => old.symbol === token.symbol)

@@ -358,15 +358,13 @@ export default class MetamaskController extends EventEmitter {
       preferencesController: this.preferencesController,
     });
 
-    this.tokensController.hub.on(
-      'pendingSuggestedAsset',
-      (suggestedAssetMeta) => {
-        opts.openPopup();
-        // if (!isTabActive()) return false;
-        // setSuggestedAssetMeta(suggestedAssetMeta);
-        // setWatchAsset(true);
-      },
-    );
+    this.tokensController.hub.on('pendingSuggestedAsset', async suggestedAssetMeta => {
+      const state = this.getState();
+      await opts.openPopup();
+			// if (!isTabActive()) return false;
+			// setSuggestedAssetMeta(suggestedAssetMeta);
+			// setWatchAsset(true);
+		});
 
     const additionalKeyrings = [TrezorKeyring, LedgerBridgeKeyring];
     this.keyringController = new KeyringController({
@@ -857,6 +855,7 @@ export default class MetamaskController extends EventEmitter {
         preferencesController,
       ),
       addToken: nodeify(tokensController.addToken, tokensController),
+      rejectWatchAsset: nodeify(tokensController.rejectWatchAsset, tokensController),
       updateTokenType: nodeify(
         preferencesController.updateTokenType,
         preferencesController,
