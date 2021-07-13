@@ -1317,7 +1317,7 @@ export function removeSuggestedTokens() {
         }
         dispatch(clearPendingTokens());
         if (getEnvironmentType() === ENVIRONMENT_TYPE_NOTIFICATION) {
-          global.platform.closeCurrentWindow();
+          // global.platform.closeCurrentWindow();
           return;
         }
         resolve(suggestedTokens);
@@ -1649,7 +1649,7 @@ export function closeCurrentNotificationWindow() {
       getEnvironmentType() === ENVIRONMENT_TYPE_NOTIFICATION &&
       !hasUnconfirmedTransactions(getState())
     ) {
-      global.platform.closeCurrentWindow();
+      // global.platform.closeCurrentWindow();
     }
   };
 }

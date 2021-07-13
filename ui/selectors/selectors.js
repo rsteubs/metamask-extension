@@ -340,7 +340,8 @@ export function getTotalUnapprovedCount(state) {
     unapprovedTypedMessagesCount +
     getUnapprovedTxCount(state) +
     pendingApprovalCount +
-    getSuggestedTokenCount(state)
+    // getSuggestedTokenCount(state)
+    getSuggestedAssetCount(state)
   );
 }
 
@@ -364,6 +365,11 @@ export function getUnapprovedTemplatedConfirmations(state) {
 function getSuggestedTokenCount(state) {
   const { suggestedTokens = {} } = state.metamask;
   return Object.keys(suggestedTokens).length;
+}
+
+function getSuggestedAssetCount(state) {
+  const { suggestedAssets = [] } = state.metamask;
+  return suggestedAssets.length;
 }
 
 export function getIsMainnet(state) {

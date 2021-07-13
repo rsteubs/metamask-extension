@@ -22,6 +22,8 @@ export default class ConfirmAddSuggestedToken extends Component {
   };
 
   componentDidMount() {
+    const { mostRecentOverviewPage, pendingTokens = {}, history } = this.props;
+    debugger
     this._checkPendingTokens();
   }
 
@@ -35,6 +37,7 @@ export default class ConfirmAddSuggestedToken extends Component {
     if (Object.keys(pendingTokens).length > 0) {
       return;
     }
+    console.log("pendingTokens", pendingTokens)
 
     if (getEnvironmentType() === ENVIRONMENT_TYPE_NOTIFICATION) {
       global.platform.closeCurrentWindow();
