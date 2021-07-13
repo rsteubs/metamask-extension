@@ -87,11 +87,11 @@ export default class PreferencesController {
     this.openPopup = opts.openPopup;
     this.migrateAddressBookState = opts.migrateAddressBookState;
 
-    this.network.on(NETWORK_EVENTS.NETWORK_DID_CHANGE, () => {
-      const { tokens, hiddenTokens } = this._getTokenRelatedStates();
-      this.ethersProvider = new ethers.providers.Web3Provider(opts.provider);
-      this._updateAccountTokens(tokens, this.getAssetImages(), hiddenTokens);
-    });
+    // this.network.on(NETWORK_EVENTS.NETWORK_DID_CHANGE, () => {
+    //   const { tokens, hiddenTokens } = this._getTokenRelatedStates();
+    //   this.ethersProvider = new ethers.providers.Web3Provider(opts.provider);
+    //   this._updateAccountTokens(tokens, this.getAssetImages(), hiddenTokens);
+    // });
 
     this._subscribeToInfuraAvailability();
 
@@ -361,7 +361,7 @@ export default class PreferencesController {
    */
   setSelectedAddress(_address) {
     const address = normalizeAddress(_address);
-    this._updateTokens(address);
+    // this._updateTokens(address);
 
     const { identities, tokens } = this.store.getState();
     const selectedIdentity = identities[address];
@@ -831,18 +831,18 @@ export default class PreferencesController {
     return tokenContract;
   }
 
-  /**
-   * Updates `tokens` and `hiddenTokens` of current account and network.
-   *
-   * @param {string} selectedAddress - Account address to be updated with.
-   *
-   */
-  _updateTokens(selectedAddress) {
-    const { tokens, hiddenTokens } = this._getTokenRelatedStates(
-      selectedAddress,
-    );
-    this.store.updateState({ tokens, hiddenTokens });
-  }
+  // /**
+  //  * Updates `tokens` and `hiddenTokens` of current account and network.
+  //  *
+  //  * @param {string} selectedAddress - Account address to be updated with.
+  //  *
+  //  */
+  // _updateTokens(selectedAddress) {
+  //   const { tokens, hiddenTokens } = this._getTokenRelatedStates(
+  //     selectedAddress,
+  //   );
+  //   this.store.updateState({ tokens, hiddenTokens });
+  // }
 
   /**
    * A getter for `tokens`, `accountTokens`, `hiddenTokens` and `accountHiddenTokens` related states.

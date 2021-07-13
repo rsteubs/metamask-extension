@@ -1253,21 +1253,12 @@ export function addToken(
       log.error(error);
       dispatch(displayWarning(error.message));
       return;
+    } finally {
+      dispatch(hideLoadingIndication());
     }
-    dispatch(updateTokens(tokens));
-    resolve(tokens);
-    // return new Promise((resolve, reject) => {
-    //   background.addToken(address, symbol, decimals, image, (err, tokens) => {
-    //     dispatch(hideLoadingIndication());
-    //     if (err) {
-    //       dispatch(displayWarning(err.message));
-    //       reject(err);
-    //       return;
-    //     }
-    //     dispatch(updateTokens(tokens));
-    //     resolve(tokens);
-    //   });
-    // });
+    // dispatch(updateTokens(tokens));
+    // resolve(tokens);
+    // return Promise.resolve(tokens)
   };
 }
 
@@ -1282,7 +1273,7 @@ export function removeToken(address) {
           reject(err);
           return;
         }
-        dispatch(updateTokens(tokens));
+        // dispatch(updateTokens(tokens));
         resolve(tokens);
       });
     });
@@ -1316,6 +1307,10 @@ export function rejectWatchAsset(suggestedAssetID) {
       dispatch(displayWarning(error.message));
       return;
     }
+    finally {
+      dispatch(hideLoadingIndication());
+    }
+
     if (getEnvironmentType() === ENVIRONMENT_TYPE_NOTIFICATION) {
       global.platform.closeCurrentWindow();
       return;
@@ -1333,7 +1328,10 @@ export function acceptWatchAsset(suggestedAssetID) {
       log.error(error);
       dispatch(displayWarning(error.message));
       return;
+    } finally {
+      dispatch(hideLoadingIndication());
     }
+    
     if (getEnvironmentType() === ENVIRONMENT_TYPE_NOTIFICATION) {
       global.platform.closeCurrentWindow();
       return;

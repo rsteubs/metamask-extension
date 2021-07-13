@@ -46,9 +46,7 @@ import createOnboardingMiddleware from './lib/createOnboardingMiddleware';
 import { setupMultiplex } from './lib/stream-utils';
 import EnsController from './controllers/ens';
 import NetworkController, { NETWORK_EVENTS } from './controllers/network';
-import PreferencesController, {
-  PREFERENCE_EVENTS,
-} from './controllers/preferences';
+import PreferencesController from './controllers/preferences';
 import AppStateController from './controllers/app-state';
 import CachedBalancesController from './controllers/cached-balances';
 import AlertController from './controllers/alert';
@@ -167,7 +165,6 @@ export default class MetamaskController extends EventEmitter {
       onPreferencesStateChange: this.preferencesController.store.subscribe.bind(
         this.preferencesController.store,
       ),
-      // onNetworkStateChange: this._onModifiedNetworkStateChange.bind(this),
       onNetworkStateChange: this.networkController.store.subscribe.bind(
         this.networkController.store,
       ),
@@ -361,9 +358,6 @@ export default class MetamaskController extends EventEmitter {
     this.tokensController.hub.on('pendingSuggestedAsset', async suggestedAssetMeta => {
       const state = this.getState();
       await opts.openPopup();
-			// if (!isTabActive()) return false;
-			// setSuggestedAssetMeta(suggestedAssetMeta);
-			// setWatchAsset(true);
 		});
 
     const additionalKeyrings = [TrezorKeyring, LedgerBridgeKeyring];
@@ -1286,6 +1280,7 @@ export default class MetamaskController extends EventEmitter {
    */
   async fetchInfoToSync() {
     // Preferences
+    //TODO - ALEX - SWITCH OUT WITH TOKENS CONTROLLER
     const {
       accountTokens,
       currentLocale,
@@ -2593,19 +2588,6 @@ export default class MetamaskController extends EventEmitter {
     });
     this.emit('unlock');
   }
-
-  _onModifiedNetworkStateChange = (cb) => {
-    this.networkController.store.subscribe(async (networkState) => {
-      const modifiedNetworkState = {
-        ...networkState,
-        provider: {
-          ...networkState.provider,
-          chainId: hexToDecimal(networkState.provider.chainId),
-        },
-      };
-      return await cb(modifiedNetworkState);
-    });
-  };
 
   /**
    * Handle global lock, triggered by KeyringController lock.
