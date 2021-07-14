@@ -24,7 +24,7 @@ export default class DetectTokensController {
     preferences,
     network,
     keyringMemStore,
-    tokensController
+    tokensController,
   } = {}) {
     this.tokensController = tokensController;
     this.preferences = preferences;

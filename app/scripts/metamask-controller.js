@@ -168,9 +168,9 @@ export default class MetamaskController extends EventEmitter {
       onNetworkStateChange: this.networkController.store.subscribe.bind(
         this.networkController.store,
       ),
+      config: { provider: this.provider },
+      state: initState.TokensController,
     });
-    this.tokensController.update(initState.TokensController);
-    this.tokensController.configureProvider(this.provider);
 
     this.metaMetricsController = new MetaMetricsController({
       segment,
@@ -357,10 +357,9 @@ export default class MetamaskController extends EventEmitter {
       preferencesController: this.preferencesController,
     });
 
-    this.tokensController.hub.on('pendingSuggestedAsset', async suggestedAssetMeta => {
-      const state = this.getState();
+    this.tokensController.hub.on('pendingSuggestedAsset', async () => {
       await opts.openPopup();
-		});
+    });
 
     const additionalKeyrings = [TrezorKeyring, LedgerBridgeKeyring];
     this.keyringController = new KeyringController({
@@ -852,7 +851,14 @@ export default class MetamaskController extends EventEmitter {
         preferencesController,
       ),
       addToken: nodeify(tokensController.addToken, tokensController),
-      rejectWatchAsset: nodeify(tokensController.rejectWatchAsset, tokensController),
+      rejectWatchAsset: nodeify(
+        tokensController.rejectWatchAsset,
+        tokensController,
+      ),
+      acceptWatchAsset: nodeify(
+        tokensController.acceptWatchAsset,
+        tokensController,
+      ),
       updateTokenType: nodeify(
         tokensController.updateTokenType,
         tokensController,
@@ -1278,20 +1284,17 @@ export default class MetamaskController extends EventEmitter {
    */
   async fetchInfoToSync() {
     // Preferences
-    //TODO - ALEX - TEST THIS
+    // TODO - ALEX - TEST THIS
     const {
       currentLocale,
       frequentRpcList,
       identities,
       selectedAddress,
     } = this.preferencesController.store.getState();
-  
-    const {
-      tokens,
-      allTokens,
-    } = this.tokensController.state;
-    
-    const accountTokens = allTokens[selectedAddress]
+
+    const { tokens, allTokens } = this.tokensController.state;
+
+    const accountTokens = allTokens[selectedAddress];
 
     // Filter ERC20 tokens
     const filteredAccountTokens = {};
@@ -1325,7 +1328,7 @@ export default class MetamaskController extends EventEmitter {
     const tokensController = {
       allTokens: filteredAccountTokens,
       tokens,
-    }
+    };
 
     // Accounts
     const hdKeyring = this.keyringController.getKeyringsByType(

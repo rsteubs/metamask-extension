@@ -14,7 +14,8 @@ export default class ConfirmAddSuggestedToken extends Component {
 
   static propTypes = {
     history: PropTypes.object,
-    addToken: PropTypes.func,
+    acceptWatchAsset: PropTypes.func,
+    rejectWatchAsset: PropTypes.func,
     mostRecentOverviewPage: PropTypes.string.isRequired,
     suggestedAssets: PropTypes.array,
     tokens: PropTypes.array,
@@ -29,7 +30,11 @@ export default class ConfirmAddSuggestedToken extends Component {
   }
 
   _checksuggestedAssets() {
-    const { mostRecentOverviewPage, suggestedAssets = [], history } = this.props;
+    const {
+      mostRecentOverviewPage,
+      suggestedAssets = [],
+      history,
+    } = this.props;
 
     if (suggestedAssets.length > 0) {
       return;
@@ -47,15 +52,18 @@ export default class ConfirmAddSuggestedToken extends Component {
 
   render() {
     const {
-      addToken,
       suggestedAssets,
       tokens,
       rejectWatchAsset,
       history,
       mostRecentOverviewPage,
+      acceptWatchAsset,
     } = this.props;
-    const [ { asset, id } ] = suggestedAssets;
-    const hasTokenDuplicates = this.checkTokenDuplicates(suggestedAssets, tokens);
+    const [{ asset, id }] = suggestedAssets;
+    const hasTokenDuplicates = this.checkTokenDuplicates(
+      suggestedAssets,
+      tokens,
+    );
     const reusesName = this.checkNameReuse(suggestedAssets, tokens);
 
     return (
@@ -87,25 +95,25 @@ export default class ConfirmAddSuggestedToken extends Component {
               </div>
             </div>
             <div className="confirm-add-token__token-list">
-                  <div
-                    className="confirm-add-token__token-list-item"
-                    key={asset.address}
-                  >
-                    <div className="confirm-add-token__token confirm-add-token__data">
-                      <Identicon
-                        className="confirm-add-token__token-icon"
-                        diameter={48}
-                        address={asset.address}
-                        image={asset.image}
-                      />
-                      <div className="confirm-add-token__name">
-                        {this.getTokenName(asset.name, asset.symbol)}
-                      </div>
-                    </div>
-                    <div className="confirm-add-token__balance">
-                      <TokenBalance token={asset} />
-                    </div>
+              <div
+                className="confirm-add-token__token-list-item"
+                key={asset.address}
+              >
+                <div className="confirm-add-token__token confirm-add-token__data">
+                  <Identicon
+                    className="confirm-add-token__token-icon"
+                    diameter={48}
+                    address={asset.address}
+                    image={asset.image}
+                  />
+                  <div className="confirm-add-token__name">
+                    {this.getTokenName(asset.name, asset.symbol)}
                   </div>
+                </div>
+                <div className="confirm-add-token__balance">
+                  <TokenBalance token={asset} />
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -135,10 +143,10 @@ export default class ConfirmAddSuggestedToken extends Component {
                       event: 'Token Added',
                       category: 'Wallet',
                       sensitiveProperties: {
-                        token_symbol: pendingToken.symbol,
-                        token_contract_address: pendingToken.address,
-                        token_decimal_precision: pendingToken.decimals,
-                        unlisted: pendingToken.unlisted,
+                        token_symbol: asset.symbol,
+                        token_contract_address: asset.address,
+                        token_decimal_precision: asset.decimals,
+                        unlisted: asset.unlisted,
                         source: 'dapp',
                       },
                     });
@@ -155,8 +163,8 @@ export default class ConfirmAddSuggestedToken extends Component {
   }
 
   checkTokenDuplicates(suggestedAssets, tokens) {
-    const pending = suggestedAssets.map(token => token.address);
-    const existing = tokens.map((token) => token.address);
+    const pending = suggestedAssets.map(({asset}) => asset.address.toUpperCase());
+    const existing = tokens.map((token) => token.address.toUpperCase());
     const dupes = pending.filter((proposed) => {
       return existing.includes(proposed);
     });
@@ -171,13 +179,12 @@ export default class ConfirmAddSuggestedToken extends Component {
    * This should be flagged as possibly deceptive or confusing.
    */
   checkNameReuse(suggestedAssets, tokens) {
-    const duplicates = suggestedAssets
-      .filter((token) => {
-        const dupes = tokens
-          .filter((old) => old.symbol === token.symbol)
-          .filter((old) => old.address !== token.address);
-        return dupes.length > 0;
-      });
+    const duplicates = suggestedAssets.filter(({asset}) => {
+      const dupes = tokens
+        .filter((old) => old.symbol === asset.symbol)
+        .filter((old) => old.address.toUpperCase() !== asset.address.toUpperCase());
+      return dupes.length > 0;
+    });
     return duplicates.length > 0;
   }
 }

@@ -340,7 +340,6 @@ export function getTotalUnapprovedCount(state) {
     unapprovedTypedMessagesCount +
     getUnapprovedTxCount(state) +
     pendingApprovalCount +
-    // getSuggestedTokenCount(state)
     getSuggestedAssetCount(state)
   );
 }
@@ -360,11 +359,6 @@ export function getUnapprovedTemplatedConfirmations(state) {
   return unapprovedConfirmations.filter((approval) =>
     TEMPLATED_CONFIRMATION_MESSAGE_TYPES.includes(approval.type),
   );
-}
-
-function getSuggestedTokenCount(state) {
-  const { suggestedTokens = {} } = state.metamask;
-  return Object.keys(suggestedTokens).length;
 }
 
 function getSuggestedAssetCount(state) {

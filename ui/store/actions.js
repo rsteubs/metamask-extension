@@ -1310,11 +1310,12 @@ export function rejectWatchAsset(suggestedAssetID) {
     finally {
       dispatch(hideLoadingIndication());
     }
-
-    if (getEnvironmentType() === ENVIRONMENT_TYPE_NOTIFICATION) {
-      global.platform.closeCurrentWindow();
-      return;
-    }
+    
+    dispatch(closeCurrentNotificationWindow())
+    // if (getEnvironmentType() === ENVIRONMENT_TYPE_NOTIFICATION) {
+    //   global.platform.closeCurrentWindow();
+    //   return;
+    // }
   };
 }
 
@@ -1331,35 +1332,12 @@ export function acceptWatchAsset(suggestedAssetID) {
     } finally {
       dispatch(hideLoadingIndication());
     }
-
-    if (getEnvironmentType() === ENVIRONMENT_TYPE_NOTIFICATION) {
-      global.platform.closeCurrentWindow();
-      return;
-    }
-  };
-}
-
-export function removeSuggestedTokens() {
-  return (dispatch) => {
-    dispatch(showLoadingIndication());
-    return new Promise((resolve) => {
-      background.removeSuggestedTokens((err, suggestedTokens) => {
-        dispatch(hideLoadingIndication());
-        if (err) {
-          dispatch(displayWarning(err.message));
-        }
-        dispatch(clearPendingTokens());
-        if (getEnvironmentType() === ENVIRONMENT_TYPE_NOTIFICATION) {
-          global.platform.closeCurrentWindow();
-          return;
-        }
-        resolve(suggestedTokens);
-      });
-    })
-      .then(() => updateMetamaskStateFromBackground())
-      .then((suggestedTokens) =>
-        dispatch(updateMetamaskState({ ...suggestedTokens })),
-      );
+    
+    dispatch(closeCurrentNotificationWindow())
+    // if (getEnvironmentType() === ENVIRONMENT_TYPE_NOTIFICATION) {
+    //   global.platform.closeCurrentWindow();
+    //   return;
+    // }
   };
 }
 
@@ -1682,7 +1660,7 @@ export function closeCurrentNotificationWindow() {
       getEnvironmentType() === ENVIRONMENT_TYPE_NOTIFICATION &&
       !hasUnconfirmedTransactions(getState())
     ) {
-      // global.platform.closeCurrentWindow();
+      global.platform.closeCurrentWindow();
     }
   };
 }

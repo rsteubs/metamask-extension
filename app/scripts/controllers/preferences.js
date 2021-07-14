@@ -4,10 +4,11 @@ import { ethErrors } from 'eth-rpc-errors';
 import { normalize as normalizeAddress } from 'eth-sig-util';
 import { ethers } from 'ethers';
 import log from 'loglevel';
+import { Promise } from 'globalthis/implementation';
 import { NETWORK_TYPE_TO_ID_MAP } from '../../../shared/constants/network';
 import { isPrefixedFormattedHexString } from '../../../shared/modules/network.utils';
 import { NETWORK_EVENTS } from './network';
-import { Promise } from 'globalthis/implementation';
+
 export default class PreferencesController {
   /**
    *
@@ -68,7 +69,6 @@ export default class PreferencesController {
     this.store.setMaxListeners(12);
     this.openPopup = opts.openPopup;
     this.migrateAddressBookState = opts.migrateAddressBookState;
-
 
     this._subscribeToInfuraAvailability();
 
@@ -213,9 +213,7 @@ export default class PreferencesController {
    * @returns {string} the address that was removed
    */
   removeAddress(address) {
-    const {
-      identities,
-    } = this.store.getState();
+    const { identities } = this.store.getState();
 
     if (!identities[address]) {
       throw new Error(`${address} can't be deleted cause it was not found`);
@@ -239,9 +237,7 @@ export default class PreferencesController {
    *
    */
   addAddresses(addresses) {
-    const {
-      identities,
-    } = this.store.getState();
+    const { identities } = this.store.getState();
     addresses.forEach((address) => {
       // skip if already exists
       if (identities[address]) {
