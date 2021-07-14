@@ -17,7 +17,6 @@ export default class ConfirmAddSuggestedToken extends Component {
     addToken: PropTypes.func,
     mostRecentOverviewPage: PropTypes.string.isRequired,
     suggestedAssets: PropTypes.array,
-    removeSuggestedTokens: PropTypes.func,
     tokens: PropTypes.array,
   };
 

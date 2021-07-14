@@ -1331,7 +1331,7 @@ export function acceptWatchAsset(suggestedAssetID) {
     } finally {
       dispatch(hideLoadingIndication());
     }
-    
+
     if (getEnvironmentType() === ENVIRONMENT_TYPE_NOTIFICATION) {
       global.platform.closeCurrentWindow();
       return;

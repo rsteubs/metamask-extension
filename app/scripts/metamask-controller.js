@@ -162,7 +162,6 @@ export default class MetamaskController extends EventEmitter {
     });
 
     this.tokensController = new TokensController({
-      initState: initState.TokensController,
       onPreferencesStateChange: this.preferencesController.store.subscribe.bind(
         this.preferencesController.store,
       ),
@@ -171,6 +170,7 @@ export default class MetamaskController extends EventEmitter {
       ),
     });
     this.tokensController.update(initState.TokensController);
+    this.tokensController.configureProvider(this.provider);
 
     this.metaMetricsController = new MetaMetricsController({
       segment,
@@ -854,16 +854,11 @@ export default class MetamaskController extends EventEmitter {
       addToken: nodeify(tokensController.addToken, tokensController),
       rejectWatchAsset: nodeify(tokensController.rejectWatchAsset, tokensController),
       updateTokenType: nodeify(
-        preferencesController.updateTokenType,
-        preferencesController,
+        tokensController.updateTokenType,
+        tokensController,
       ),
       removeToken: nodeify(
         tokensController.removeAndIgnoreToken,
-        tokensController,
-      ),
-      // TODO - figure out if we need to add this
-      removeSuggestedTokens: nodeify(
-        preferencesController.removeSuggestedTokens,
         tokensController,
       ),
       setAccountLabel: nodeify(
@@ -1283,15 +1278,20 @@ export default class MetamaskController extends EventEmitter {
    */
   async fetchInfoToSync() {
     // Preferences
-    //TODO - ALEX - SWITCH OUT WITH TOKENS CONTROLLER
+    //TODO - ALEX - TEST THIS
     const {
-      accountTokens,
       currentLocale,
       frequentRpcList,
       identities,
       selectedAddress,
-      tokens,
     } = this.preferencesController.store.getState();
+  
+    const {
+      tokens,
+      allTokens,
+    } = this.tokensController.state;
+    
+    const accountTokens = allTokens[selectedAddress]
 
     // Filter ERC20 tokens
     const filteredAccountTokens = {};
@@ -1314,13 +1314,18 @@ export default class MetamaskController extends EventEmitter {
     });
 
     const preferences = {
-      accountTokens: filteredAccountTokens,
+      // accountTokens: filteredAccountTokens,
       currentLocale,
       frequentRpcList,
       identities,
       selectedAddress,
-      tokens,
+      // tokens,
     };
+
+    const tokensController = {
+      allTokens: filteredAccountTokens,
+      tokens,
+    }
 
     // Accounts
     const hdKeyring = this.keyringController.getKeyringsByType(
@@ -1361,6 +1366,7 @@ export default class MetamaskController extends EventEmitter {
       accounts,
       preferences,
       transactions,
+      tokensController,
       network: this.networkController.store.getState(),
     };
   }
