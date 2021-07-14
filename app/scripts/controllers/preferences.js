@@ -41,12 +41,12 @@ export default class PreferencesController {
   constructor(opts = {}) {
     const initState = {
       frequentRpcListDetail: [],
-      accountTokens: {},
-      accountHiddenTokens: {},
-      assetImages: {},
-      tokens: [],
-      hiddenTokens: [],
-      suggestedTokens: {},
+      // accountTokens: {},
+      // accountHiddenTokens: {},
+      // assetImages: {},
+      // tokens: [],
+      // hiddenTokens: [],
+      // suggestedTokens: {},
       useBlockie: false,
       useNonceField: false,
       usePhishDetect: true,
@@ -159,9 +159,9 @@ export default class PreferencesController {
     this.store.updateState({ firstTimeFlowType: type });
   }
 
-  getSuggestedTokens() {
-    return this.store.getState().suggestedTokens;
-  }
+  // getSuggestedTokens() {
+  //   return this.store.getState().suggestedTokens;
+  // }
 
   getAssetImages() {
     return this.store.getState().assetImages;
@@ -223,25 +223,25 @@ export default class PreferencesController {
    */
   setAddresses(addresses) {
     const oldIdentities = this.store.getState().identities;
-    const oldAccountTokens = this.store.getState().accountTokens;
-    const oldAccountHiddenTokens = this.store.getState().accountHiddenTokens;
+    // const oldAccountTokens = this.store.getState().accountTokens;
+    // const oldAccountHiddenTokens = this.store.getState().accountHiddenTokens;
 
     const identities = addresses.reduce((ids, address, index) => {
       const oldId = oldIdentities[address] || {};
       ids[address] = { name: `Account ${index + 1}`, address, ...oldId };
       return ids;
     }, {});
-    const accountTokens = addresses.reduce((tokens, address) => {
-      const oldTokens = oldAccountTokens[address] || {};
-      tokens[address] = oldTokens;
-      return tokens;
-    }, {});
-    const accountHiddenTokens = addresses.reduce((hiddenTokens, address) => {
-      const oldHiddenTokens = oldAccountHiddenTokens[address] || {};
-      hiddenTokens[address] = oldHiddenTokens;
-      return hiddenTokens;
-    }, {});
-    this.store.updateState({ identities, accountTokens, accountHiddenTokens });
+    // const accountTokens = addresses.reduce((tokens, address) => {
+    //   const oldTokens = oldAccountTokens[address] || {};
+    //   tokens[address] = oldTokens;
+    //   return tokens;
+    // }, {});
+    // const accountHiddenTokens = addresses.reduce((hiddenTokens, address) => {
+    //   const oldHiddenTokens = oldAccountHiddenTokens[address] || {};
+    //   hiddenTokens[address] = oldHiddenTokens;
+    //   return hiddenTokens;
+    // }, {});
+    this.store.updateState({ identities });
   }
 
   /**
@@ -253,17 +253,17 @@ export default class PreferencesController {
   removeAddress(address) {
     const {
       identities,
-      accountTokens,
-      accountHiddenTokens,
+      // accountTokens,
+      // accountHiddenTokens,
     } = this.store.getState();
 
     if (!identities[address]) {
       throw new Error(`${address} can't be deleted cause it was not found`);
     }
     delete identities[address];
-    delete accountTokens[address];
-    delete accountHiddenTokens[address];
-    this.store.updateState({ identities, accountTokens, accountHiddenTokens });
+    // delete accountTokens[address];
+    // delete accountHiddenTokens[address];
+    this.store.updateState({ identities });
 
     // If the selected account is no longer valid,
     // select an arbitrary other account:
@@ -283,8 +283,8 @@ export default class PreferencesController {
   addAddresses(addresses) {
     const {
       identities,
-      accountTokens,
-      accountHiddenTokens,
+      // accountTokens,
+      // accountHiddenTokens,
     } = this.store.getState();
     addresses.forEach((address) => {
       // skip if already exists
@@ -294,11 +294,11 @@ export default class PreferencesController {
       // add missing identity
       const identityCount = Object.keys(identities).length;
 
-      accountTokens[address] = {};
-      accountHiddenTokens[address] = {};
+      // accountTokens[address] = {};
+      // accountHiddenTokens[address] = {};
       identities[address] = { name: `Account ${identityCount + 1}`, address };
     });
-    this.store.updateState({ identities, accountTokens, accountHiddenTokens });
+    this.store.updateState({ identities });
   }
 
   /**
@@ -345,12 +345,12 @@ export default class PreferencesController {
     return selected;
   }
 
-  removeSuggestedTokens() {
-    return new Promise((resolve) => {
-      this.store.updateState({ suggestedTokens: {} });
-      resolve({});
-    });
-  }
+  // removeSuggestedTokens() {
+  //   return new Promise((resolve) => {
+  //     this.store.updateState({ suggestedTokens: {} });
+  //     resolve({});
+  //   });
+  // }
 
   /**
    * Setter for the `selectedAddress` property
@@ -363,7 +363,7 @@ export default class PreferencesController {
     const address = normalizeAddress(_address);
     // this._updateTokens(address);
 
-    const { identities, tokens } = this.store.getState();
+    const { identities } = this.store.getState();
     const selectedIdentity = identities[address];
     if (!selectedIdentity) {
       throw new Error(`Identity for '${address} not found`);
@@ -371,7 +371,7 @@ export default class PreferencesController {
 
     selectedIdentity.lastSelected = Date.now();
     this.store.updateState({ identities, selectedAddress: address });
-    return Promise.resolve(tokens);
+    // return Promise.resolve(tokens);
   }
 
   /**
@@ -405,30 +405,30 @@ export default class PreferencesController {
    * @returns {Promise<array>} Promises the new array of AddedToken objects.
    *
    */
-  async addToken(rawAddress, symbol, decimals, image) {
-    const address = normalizeAddress(rawAddress);
-    const newEntry = { address, symbol, decimals: Number(decimals) };
-    const { tokens, hiddenTokens } = this.store.getState();
-    const assetImages = this.getAssetImages();
-    const updatedHiddenTokens = hiddenTokens.filter(
-      (tokenAddress) => tokenAddress !== rawAddress.toLowerCase(),
-    );
-    const previousEntry = tokens.find((token) => {
-      return token.address === address;
-    });
-    const previousIndex = tokens.indexOf(previousEntry);
+  // async addToken(rawAddress, symbol, decimals, image) {
+  //   const address = normalizeAddress(rawAddress);
+  //   const newEntry = { address, symbol, decimals: Number(decimals) };
+  //   const { tokens, hiddenTokens } = this.store.getState();
+  //   const assetImages = this.getAssetImages();
+  //   const updatedHiddenTokens = hiddenTokens.filter(
+  //     (tokenAddress) => tokenAddress !== rawAddress.toLowerCase(),
+  //   );
+  //   const previousEntry = tokens.find((token) => {
+  //     return token.address === address;
+  //   });
+  //   const previousIndex = tokens.indexOf(previousEntry);
 
-    newEntry.isERC721 = await this._detectIsERC721(newEntry.address);
+  //   newEntry.isERC721 = await this._detectIsERC721(newEntry.address);
 
-    if (previousEntry) {
-      tokens[previousIndex] = newEntry;
-    } else {
-      tokens.push(newEntry);
-    }
-    assetImages[address] = image;
-    this._updateAccountTokens(tokens, assetImages, updatedHiddenTokens);
-    return Promise.resolve(tokens);
-  }
+  //   if (previousEntry) {
+  //     tokens[previousIndex] = newEntry;
+  //   } else {
+  //     tokens.push(newEntry);
+  //   }
+  //   assetImages[address] = image;
+  //   this._updateAccountTokens(tokens, assetImages, updatedHiddenTokens);
+  //   return Promise.resolve(tokens);
+  // }
 
   /**
    * Adds isERC721 field to token object
@@ -455,17 +455,17 @@ export default class PreferencesController {
    * @returns {Promise<array>} The new array of AddedToken objects
    *
    */
-  removeToken(rawAddress) {
-    const { tokens, hiddenTokens } = this.store.getState();
-    const assetImages = this.getAssetImages();
-    const updatedTokens = tokens.filter(
-      (token) => token.address !== rawAddress,
-    );
-    const updatedHiddenTokens = [...hiddenTokens, rawAddress.toLowerCase()];
-    delete assetImages[rawAddress];
-    this._updateAccountTokens(updatedTokens, assetImages, updatedHiddenTokens);
-    return Promise.resolve(updatedTokens);
-  }
+  // removeToken(rawAddress) {
+  //   const { tokens, hiddenTokens } = this.store.getState();
+  //   const assetImages = this.getAssetImages();
+  //   const updatedTokens = tokens.filter(
+  //     (token) => token.address !== rawAddress,
+  //   );
+  //   const updatedHiddenTokens = [...hiddenTokens, rawAddress.toLowerCase()];
+  //   delete assetImages[rawAddress];
+  //   this._updateAccountTokens(updatedTokens, assetImages, updatedHiddenTokens);
+  //   return Promise.resolve(updatedTokens);
+  // }
 
   /**
    * A getter for the `tokens` property
@@ -473,9 +473,9 @@ export default class PreferencesController {
    * @returns {Array} The current array of AddedToken objects
    *
    */
-  getTokens() {
-    return this.store.getState().tokens;
-  }
+  // getTokens() {
+  //   return this.store.getState().tokens;
+  // }
 
   /**
    * Sets a custom label for an account
@@ -776,23 +776,23 @@ export default class PreferencesController {
    * @param {array} hiddenTokens - Array of tokens hidden by user
    *
    */
-  _updateAccountTokens(tokens, assetImages, hiddenTokens) {
-    const {
-      accountTokens,
-      chainId,
-      selectedAddress,
-      accountHiddenTokens,
-    } = this._getTokenRelatedStates();
-    accountTokens[selectedAddress][chainId] = tokens;
-    accountHiddenTokens[selectedAddress][chainId] = hiddenTokens;
-    this.store.updateState({
-      accountTokens,
-      tokens,
-      assetImages,
-      accountHiddenTokens,
-      hiddenTokens,
-    });
-  }
+  // _updateAccountTokens(tokens, assetImages, hiddenTokens) {
+  //   const {
+  //     accountTokens,
+  //     chainId,
+  //     selectedAddress,
+  //     accountHiddenTokens,
+  //   } = this._getTokenRelatedStates();
+  //   accountTokens[selectedAddress][chainId] = tokens;
+  //   accountHiddenTokens[selectedAddress][chainId] = hiddenTokens;
+  //   this.store.updateState({
+  //     accountTokens,
+  //     tokens,
+  //     assetImages,
+  //     accountHiddenTokens,
+  //     hiddenTokens,
+  //   });
+  // }
 
   /**
    * Detects whether or not a token is ERC-721 compatible.
@@ -851,36 +851,36 @@ export default class PreferencesController {
    * @returns {Object.<array, object, string, string>} States to interact with tokens in `accountTokens`
    *
    */
-  _getTokenRelatedStates(selectedAddress) {
-    const { accountTokens, accountHiddenTokens } = this.store.getState();
-    if (!selectedAddress) {
-      // eslint-disable-next-line no-param-reassign
-      selectedAddress = this.store.getState().selectedAddress;
-    }
-    const chainId = this.network.getCurrentChainId();
-    if (!(selectedAddress in accountTokens)) {
-      accountTokens[selectedAddress] = {};
-    }
-    if (!(selectedAddress in accountHiddenTokens)) {
-      accountHiddenTokens[selectedAddress] = {};
-    }
-    if (!(chainId in accountTokens[selectedAddress])) {
-      accountTokens[selectedAddress][chainId] = [];
-    }
-    if (!(chainId in accountHiddenTokens[selectedAddress])) {
-      accountHiddenTokens[selectedAddress][chainId] = [];
-    }
-    const tokens = accountTokens[selectedAddress][chainId];
-    const hiddenTokens = accountHiddenTokens[selectedAddress][chainId];
-    return {
-      tokens,
-      accountTokens,
-      hiddenTokens,
-      accountHiddenTokens,
-      chainId,
-      selectedAddress,
-    };
-  }
+  // _getTokenRelatedStates(selectedAddress) {
+  //   const { accountTokens, accountHiddenTokens } = this.store.getState();
+  //   if (!selectedAddress) {
+  //     // eslint-disable-next-line no-param-reassign
+  //     selectedAddress = this.store.getState().selectedAddress;
+  //   }
+  //   const chainId = this.network.getCurrentChainId();
+  //   if (!(selectedAddress in accountTokens)) {
+  //     accountTokens[selectedAddress] = {};
+  //   }
+  //   if (!(selectedAddress in accountHiddenTokens)) {
+  //     accountHiddenTokens[selectedAddress] = {};
+  //   }
+  //   if (!(chainId in accountTokens[selectedAddress])) {
+  //     accountTokens[selectedAddress][chainId] = [];
+  //   }
+  //   if (!(chainId in accountHiddenTokens[selectedAddress])) {
+  //     accountHiddenTokens[selectedAddress][chainId] = [];
+  //   }
+  //   const tokens = accountTokens[selectedAddress][chainId];
+  //   const hiddenTokens = accountHiddenTokens[selectedAddress][chainId];
+  //   return {
+  //     tokens,
+  //     accountTokens,
+  //     hiddenTokens,
+  //     accountHiddenTokens,
+  //     chainId,
+  //     selectedAddress,
+  //   };
+  // }
 
   /**
    * Handle the suggestion of an ERC20 asset through `watchAsset`
@@ -888,19 +888,19 @@ export default class PreferencesController {
    * @param {Object} tokenMetadata - Token metadata
    *
    */
-  async _handleWatchAssetERC20(tokenMetadata) {
-    this._validateERC20AssetParams(tokenMetadata);
+  // async _handleWatchAssetERC20(tokenMetadata) {
+  //   this._validateERC20AssetParams(tokenMetadata);
 
-    const address = normalizeAddress(tokenMetadata.address);
-    const { symbol, decimals, image } = tokenMetadata;
-    this._addSuggestedERC20Asset(address, symbol, decimals, image);
+  //   const address = normalizeAddress(tokenMetadata.address);
+  //   const { symbol, decimals, image } = tokenMetadata;
+  //   this._addSuggestedERC20Asset(address, symbol, decimals, image);
 
-    await this.openPopup();
-    const tokenAddresses = this.getTokens().filter(
-      (token) => token.address === address,
-    );
-    return tokenAddresses.length > 0;
-  }
+  //   await this.openPopup();
+  //   const tokenAddresses = this.getTokens().filter(
+  //     (token) => token.address === address,
+  //   );
+  //   return tokenAddresses.length > 0;
+  // }
 
   /**
    * Validates that the passed options for suggested token have all required properties.
@@ -940,16 +940,16 @@ export default class PreferencesController {
     }
   }
 
-  _addSuggestedERC20Asset(address, symbol, decimals, image) {
-    const newEntry = {
-      address,
-      symbol,
-      decimals,
-      image,
-      unlisted: !LISTED_CONTRACT_ADDRESSES.includes(address),
-    };
-    const suggested = this.getSuggestedTokens();
-    suggested[address] = newEntry;
-    this.store.updateState({ suggestedTokens: suggested });
-  }
+  // _addSuggestedERC20Asset(address, symbol, decimals, image) {
+  //   const newEntry = {
+  //     address,
+  //     symbol,
+  //     decimals,
+  //     image,
+  //     unlisted: !LISTED_CONTRACT_ADDRESSES.includes(address),
+  //   };
+  //   const suggested = this.getSuggestedTokens();
+  //   suggested[address] = newEntry;
+  //   this.store.updateState({ suggestedTokens: suggested });
+  // }
 }

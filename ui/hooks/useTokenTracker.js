@@ -98,7 +98,7 @@ export function useTokenTracker(
       return;
     }
 
-    if (memoizedTokens.length === 0) {
+    if (memoizedTokens?.length === 0) {
       // sets loading state to false and token list to empty
       updateBalances([]);
     }

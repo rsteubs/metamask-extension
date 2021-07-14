@@ -24,7 +24,9 @@ export default class DetectTokensController {
     preferences,
     network,
     keyringMemStore,
+    tokensController
   } = {}) {
+    this.tokensController = tokensController;
     this.preferences = preferences;
     this.interval = interval;
     this.network = network;
@@ -68,7 +70,7 @@ export default class DetectTokensController {
     tokensToDetect.forEach((tokenAddress, index) => {
       const balance = result[index];
       if (balance && !balance.isZero()) {
-        this._preferences.addToken(
+        this.tokensController.addToken(
           tokenAddress,
           contracts[tokenAddress].symbol,
           contracts[tokenAddress].decimals,
@@ -127,16 +129,16 @@ export default class DetectTokensController {
       return;
     }
     this._preferences = preferences;
-    const currentTokens = preferences.store.getState().tokens;
+    const currentTokens = this.tokensController.state.tokens;
     this.tokenAddresses = currentTokens
       ? currentTokens.map((token) => token.address)
       : [];
-    this.hiddenTokens = preferences.store.getState().hiddenTokens;
-    preferences.store.subscribe(({ tokens = [], hiddenTokens = [] }) => {
+    this.hiddenTokens = this.tokensController.state.ignoredTokens;
+    this.tokensController.subscribe(({ tokens = [], ignoredTokens = [] }) => {
       this.tokenAddresses = tokens.map((token) => {
         return token.address;
       });
-      this.hiddenTokens = hiddenTokens;
+      this.hiddenTokens = ignoredTokens;
     });
     preferences.store.subscribe(({ selectedAddress }) => {
       if (this.selectedAddress !== selectedAddress) {
