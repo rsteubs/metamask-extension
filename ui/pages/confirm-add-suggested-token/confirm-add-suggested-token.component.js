@@ -163,7 +163,9 @@ export default class ConfirmAddSuggestedToken extends Component {
   }
 
   checkTokenDuplicates(suggestedAssets, tokens) {
-    const pending = suggestedAssets.map(({asset}) => asset.address.toUpperCase());
+    const pending = suggestedAssets.map(({ asset }) =>
+      asset.address.toUpperCase(),
+    );
     const existing = tokens.map((token) => token.address.toUpperCase());
     const dupes = pending.filter((proposed) => {
       return existing.includes(proposed);
@@ -179,10 +181,12 @@ export default class ConfirmAddSuggestedToken extends Component {
    * This should be flagged as possibly deceptive or confusing.
    */
   checkNameReuse(suggestedAssets, tokens) {
-    const duplicates = suggestedAssets.filter(({asset}) => {
+    const duplicates = suggestedAssets.filter(({ asset }) => {
       const dupes = tokens
         .filter((old) => old.symbol === asset.symbol)
-        .filter((old) => old.address.toUpperCase() !== asset.address.toUpperCase());
+        .filter(
+          (old) => old.address.toUpperCase() !== asset.address.toUpperCase(),
+        );
       return dupes.length > 0;
     });
     return duplicates.length > 0;

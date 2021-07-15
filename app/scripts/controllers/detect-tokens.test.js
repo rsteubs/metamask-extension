@@ -8,10 +8,11 @@ import { MAINNET, ROPSTEN } from '../../../shared/constants/network';
 import DetectTokensController from './detect-tokens';
 import NetworkController from './network';
 import PreferencesController from './preferences';
+import { TokensController } from '@metamask/controllers';
 
 describe('DetectTokensController', function () {
   const sandbox = sinon.createSandbox();
-  let keyringMemStore, network, preferences, provider;
+  let keyringMemStore, network, preferences, provider, tokensController;
 
   const noop = () => undefined;
 
@@ -26,6 +27,14 @@ describe('DetectTokensController', function () {
     network.initializeProvider(networkControllerProviderConfig);
     provider = network.getProviderAndBlockTracker().provider;
     preferences = new PreferencesController({ network, provider });
+    tokensController = new TokensController({
+      onPreferencesStateChange: preferences.store.subscribe.bind(
+        preferences.store,
+      ),
+      onNetworkStateChange: network.store.subscribe.bind(
+        network.store,
+      ),
+    });
     preferences.setAddresses([
       '0x7e57e2',
       '0xbc86727e770de68b1060c91f6bb6945c73e10388',
@@ -33,9 +42,9 @@ describe('DetectTokensController', function () {
     sandbox
       .stub(network, 'getLatestBlock')
       .callsFake(() => Promise.resolve({}));
-    sandbox
-      .stub(preferences, '_detectIsERC721')
-      .returns(Promise.resolve(false));
+    // sandbox
+    //   .stub(preferences, '_detectIsERC721')
+    //   .returns(Promise.resolve(false));
   });
 
   after(function () {
@@ -107,7 +116,7 @@ describe('DetectTokensController', function () {
 
     const existingTokenAddress = erc20ContractAddresses[0];
     const existingToken = contracts[existingTokenAddress];
-    await preferences.addToken(
+    await tokensController.addToken(
       existingTokenAddress,
       existingToken.symbol,
       existingToken.decimals,
@@ -123,11 +132,11 @@ describe('DetectTokensController', function () {
         ),
       );
 
-    await preferences.removeToken(tokenAddressToSkip);
+    await tokensController.removeToken(tokenAddressToSkip);
 
     await controller.detectNewTokens();
 
-    assert.deepEqual(preferences.store.getState().tokens, [
+    assert.deepEqual(tokensController.state.tokens, [
       {
         address: existingTokenAddress.toLowerCase(),
         decimals: existingToken.decimals,

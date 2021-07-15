@@ -1306,19 +1306,17 @@ export function rejectWatchAsset(suggestedAssetID) {
       log.error(error);
       dispatch(displayWarning(error.message));
       return;
-    }
-    finally {
+    } finally {
       dispatch(hideLoadingIndication());
     }
-    
-    dispatch(closeCurrentNotificationWindow())
+
+    dispatch(closeCurrentNotificationWindow());
     // if (getEnvironmentType() === ENVIRONMENT_TYPE_NOTIFICATION) {
     //   global.platform.closeCurrentWindow();
     //   return;
     // }
   };
 }
-
 
 export function acceptWatchAsset(suggestedAssetID) {
   return async (dispatch) => {
@@ -1332,8 +1330,8 @@ export function acceptWatchAsset(suggestedAssetID) {
     } finally {
       dispatch(hideLoadingIndication());
     }
-    
-    dispatch(closeCurrentNotificationWindow())
+
+    dispatch(closeCurrentNotificationWindow());
     // if (getEnvironmentType() === ENVIRONMENT_TYPE_NOTIFICATION) {
     //   global.platform.closeCurrentWindow();
     //   return;

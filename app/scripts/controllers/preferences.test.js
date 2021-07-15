@@ -1,9 +1,6 @@
 import { strict as assert } from 'assert';
 import sinon from 'sinon';
-import {
-  MAINNET_CHAIN_ID,
-  RINKEBY_CHAIN_ID,
-} from '../../../shared/constants/network';
+import { MAINNET_CHAIN_ID } from '../../../shared/constants/network';
 import PreferencesController from './preferences';
 import NetworkController from './network';
 
@@ -11,9 +8,6 @@ describe('preferences controller', function () {
   let preferencesController;
   let network;
   let currentChainId;
-  let triggerNetworkChange;
-  let switchToMainnet;
-  let switchToRinkeby;
   let provider;
   const migrateAddressBookState = sinon.stub();
 
@@ -35,22 +29,12 @@ describe('preferences controller', function () {
     sandbox
       .stub(network, 'getProviderConfig')
       .callsFake(() => ({ type: 'mainnet' }));
-    const spy = sandbox.spy(network, 'on');
 
     preferencesController = new PreferencesController({
       migrateAddressBookState,
       network,
       provider,
     });
-    triggerNetworkChange = spy.firstCall.args[1];
-    switchToMainnet = () => {
-      currentChainId = MAINNET_CHAIN_ID;
-      triggerNetworkChange();
-    };
-    switchToRinkeby = () => {
-      currentChainId = RINKEBY_CHAIN_ID;
-      triggerNetworkChange();
-    };
   });
 
   afterEach(function () {
@@ -74,17 +58,6 @@ describe('preferences controller', function () {
       });
     });
 
-    it('should create account tokens for each account in the store', function () {
-      preferencesController.setAddresses(['0xda22le', '0x7e57e2']);
-
-      const { accountTokens } = preferencesController.store.getState();
-
-      assert.deepEqual(accountTokens, {
-        '0xda22le': {},
-        '0x7e57e2': {},
-      });
-    });
-
     it('should replace its list of addresses', function () {
       preferencesController.setAddresses(['0xda22le', '0x7e57e2']);
       preferencesController.setAddresses(['0xda22le77', '0x7e57e277']);
@@ -103,104 +76,6 @@ describe('preferences controller', function () {
     });
   });
 
-  describe('updateTokenType', function () {
-    it('should add isERC721 = true to token object in state when token is collectible and in our contract-metadata repo', async function () {
-      const contractAddresses = Object.keys(contractMaps);
-      const erc721ContractAddresses = contractAddresses.filter(
-        (contractAddress) => contractMaps[contractAddress].erc721 === true,
-      );
-      const address = erc721ContractAddresses[0];
-      const { symbol, decimals } = contractMaps[address];
-      preferencesController.store.updateState({
-        tokens: [{ address, symbol, decimals }],
-      });
-      const result = await preferencesController.updateTokenType(address);
-      assert.equal(result.isERC721, true);
-    });
-
-    it('should add isERC721 = true to token object in state when token is collectible and not in our contract-metadata repo', async function () {
-      const tokenAddress = '0xda5584cc586d07c7141aa427224a4bd58e64af7d';
-      preferencesController.store.updateState({
-        tokens: [
-          {
-            address: tokenAddress,
-            symbol: 'TESTNFT',
-            decimals: '0',
-          },
-        ],
-      });
-      sinon
-        .stub(preferencesController, '_detectIsERC721')
-        .callsFake(() => true);
-
-      const result = await preferencesController.updateTokenType(tokenAddress);
-      assert.equal(
-        preferencesController._detectIsERC721.getCall(0).args[0],
-        tokenAddress,
-      );
-      assert.equal(result.isERC721, true);
-    });
-  });
-
-  describe('_detectIsERC721', function () {
-    it('should return true when token is in our contract-metadata repo', async function () {
-      const tokenAddress = '0x06012c8cf97BEaD5deAe237070F9587f8E7A266d';
-
-      const result = await preferencesController._detectIsERC721(tokenAddress);
-      assert.equal(result, true);
-    });
-
-    it('should return true when the token is not in our contract-metadata repo but tokenContract.supportsInterface returns true', async function () {
-      const tokenAddress = '0xda5584cc586d07c7141aa427224a4bd58e64af7d';
-
-      const supportsInterfaceStub = sinon.stub().returns(Promise.resolve(true));
-      sinon
-        .stub(preferencesController, '_createEthersContract')
-        .callsFake(() => ({ supportsInterface: supportsInterfaceStub }));
-
-      const result = await preferencesController._detectIsERC721(tokenAddress);
-      assert.equal(
-        preferencesController._createEthersContract.getCall(0).args[0],
-        tokenAddress,
-      );
-      assert.deepEqual(
-        preferencesController._createEthersContract.getCall(0).args[1],
-        abiERC721,
-      );
-      assert.equal(
-        preferencesController._createEthersContract.getCall(0).args[2],
-        preferencesController.ethersProvider,
-      );
-      assert.equal(result, true);
-    });
-
-    it('should return false when the token is not in our contract-metadata repo and tokenContract.supportsInterface returns false', async function () {
-      const tokenAddress = '0xda5584cc586d07c7141aa427224a4bd58e64af7d';
-
-      const supportsInterfaceStub = sinon
-        .stub()
-        .returns(Promise.resolve(false));
-      sinon
-        .stub(preferencesController, '_createEthersContract')
-        .callsFake(() => ({ supportsInterface: supportsInterfaceStub }));
-
-      const result = await preferencesController._detectIsERC721(tokenAddress);
-      assert.equal(
-        preferencesController._createEthersContract.getCall(0).args[0],
-        tokenAddress,
-      );
-      assert.deepEqual(
-        preferencesController._createEthersContract.getCall(0).args[1],
-        abiERC721,
-      );
-      assert.equal(
-        preferencesController._createEthersContract.getCall(0).args[2],
-        preferencesController.ethersProvider,
-      );
-      assert.equal(result, false);
-    });
-  });
-
   describe('removeAddress', function () {
     it('should remove an address from state', function () {
       preferencesController.setAddresses(['0xda22le', '0x7e57e2']);
@@ -212,7 +87,6 @@ describe('preferences controller', function () {
         undefined,
       );
     });
-
 
     it('should switch accounts if the selected address is removed', function () {
       preferencesController.setAddresses(['0xda22le', '0x7e57e2']);
@@ -243,230 +117,6 @@ describe('preferences controller', function () {
           name: 'Dazzle',
           address: '0xda22le',
         },
-      );
-    });
-  });
-
-  describe('on updateStateNetworkType', function () {
-    it('should remove a token from its state on corresponding network', async function () {
-      await preferencesController.addToken('0xa', 'A', 4);
-      await preferencesController.addToken('0xb', 'B', 5);
-      const initialTokensFirst = preferencesController.getTokens();
-      switchToRinkeby();
-      await preferencesController.addToken('0xa', 'C', 4);
-      await preferencesController.addToken('0xb', 'D', 5);
-      const initialTokensSecond = preferencesController.getTokens();
-
-      assert.notDeepEqual(
-        initialTokensFirst,
-        initialTokensSecond,
-        'tokens not equal for different networks and tokens',
-      );
-
-      switchToMainnet();
-      const tokensFirst = preferencesController.getTokens();
-      switchToRinkeby();
-      const tokensSecond = preferencesController.getTokens();
-      assert.deepEqual(
-        tokensFirst,
-        initialTokensFirst,
-        'tokens equal for same network',
-      );
-      assert.deepEqual(
-        tokensSecond,
-        initialTokensSecond,
-        'tokens equal for same network',
-      );
-    });
-  });
-
-  describe('on watchAsset', function () {
-    let req, stubHandleWatchAssetERC20;
-    const sandbox = sinon.createSandbox();
-
-    beforeEach(function () {
-      req = { method: 'wallet_watchAsset', params: {} };
-      stubHandleWatchAssetERC20 = sandbox.stub(
-        preferencesController,
-        '_handleWatchAssetERC20',
-      );
-    });
-
-    after(function () {
-      sandbox.restore();
-    });
-
-    it('should error if passed no type', async function () {
-      await assert.rejects(
-        () => preferencesController.requestWatchAsset(req),
-        { message: 'Asset of type "undefined" not supported.' },
-        'should have errored',
-      );
-    });
-
-    it('should error if method is not supported', async function () {
-      req.params.type = 'someasset';
-      await assert.rejects(
-        () => preferencesController.requestWatchAsset(req),
-        { message: 'Asset of type "someasset" not supported.' },
-        'should have errored',
-      );
-    });
-
-    it('should handle ERC20 type', async function () {
-      req.params.type = 'ERC20';
-      await preferencesController.requestWatchAsset(req);
-      sandbox.assert.called(stubHandleWatchAssetERC20);
-    });
-  });
-
-  describe('on watchAsset of type ERC20', function () {
-    let req;
-
-    const sandbox = sinon.createSandbox();
-    beforeEach(function () {
-      req = { params: { type: 'ERC20' } };
-    });
-    after(function () {
-      sandbox.restore();
-    });
-
-    it('should add suggested token', async function () {
-      const address = '0xabcdef1234567';
-      const symbol = 'ABBR';
-      const decimals = 5;
-      const image = 'someimage';
-      req.params.options = { address, symbol, decimals, image };
-
-      sandbox
-        .stub(preferencesController, '_validateERC20AssetParams')
-        .returns(true);
-      preferencesController.openPopup = async () => undefined;
-
-      await preferencesController._handleWatchAssetERC20(req.params.options);
-      const suggested = preferencesController.getSuggestedTokens();
-      assert.equal(
-        Object.keys(suggested).length,
-        1,
-        `one token added ${Object.keys(suggested)}`,
-      );
-
-      assert.equal(
-        suggested[address].address,
-        address,
-        'set address correctly',
-      );
-      assert.equal(suggested[address].symbol, symbol, 'set symbol correctly');
-      assert.equal(
-        suggested[address].decimals,
-        decimals,
-        'set decimals correctly',
-      );
-      assert.equal(suggested[address].image, image, 'set image correctly');
-    });
-
-    it('should add token correctly if user confirms', async function () {
-      const address = '0xabcdef1234567';
-      const symbol = 'ABBR';
-      const decimals = 5;
-      const image = 'someimage';
-      req.params.options = { address, symbol, decimals, image };
-
-      sandbox
-        .stub(preferencesController, '_validateERC20AssetParams')
-        .returns(true);
-      preferencesController.openPopup = async () => {
-        await preferencesController.addToken(address, symbol, decimals, image);
-      };
-
-      await preferencesController._handleWatchAssetERC20(req.params.options);
-      const tokens = preferencesController.getTokens();
-      assert.equal(tokens.length, 1, `one token added`);
-      const added = tokens[0];
-      assert.equal(added.address, address, 'set address correctly');
-      assert.equal(added.symbol, symbol, 'set symbol correctly');
-      assert.equal(added.decimals, decimals, 'set decimals correctly');
-
-      const assetImages = preferencesController.getAssetImages();
-      assert.ok(assetImages[address], `set image correctly`);
-    });
-    it('should validate ERC20 asset correctly', async function () {
-      const validate = preferencesController._validateERC20AssetParams;
-
-      assert.doesNotThrow(() =>
-        validate({
-          address: '0xd26114cd6EE289AccF82350c8d8487fedB8A0C07',
-          symbol: 'ABC',
-          decimals: 0,
-        }),
-      );
-      assert.doesNotThrow(() =>
-        validate({
-          address: '0xd26114cd6EE289AccF82350c8d8487fedB8A0C07',
-          symbol: 'ABCDEFGHIJK',
-          decimals: 0,
-        }),
-      );
-
-      assert.throws(
-        () => validate({ symbol: 'ABC', decimals: 0 }),
-        'missing address should fail',
-      );
-      assert.throws(
-        () =>
-          validate({
-            address: '0xd26114cd6EE289AccF82350c8d8487fedB8A0C07',
-            decimals: 0,
-          }),
-        'missing symbol should fail',
-      );
-      assert.throws(
-        () =>
-          validate({
-            address: '0xd26114cd6EE289AccF82350c8d8487fedB8A0C07',
-            symbol: 'ABC',
-          }),
-        'missing decimals should fail',
-      );
-      assert.throws(
-        () =>
-          validate({
-            address: '0xd26114cd6EE289AccF82350c8d8487fedB8A0C07',
-            symbol: 'ABCDEFGHIJKLM',
-            decimals: 0,
-          }),
-        'long symbol should fail',
-      );
-      assert.throws(
-        () =>
-          validate({
-            address: '0xd26114cd6EE289AccF82350c8d8487fedB8A0C07',
-            symbol: '',
-            decimals: 0,
-          }),
-        'empty symbol should fail',
-      );
-      assert.throws(
-        () =>
-          validate({
-            address: '0xd26114cd6EE289AccF82350c8d8487fedB8A0C07',
-            symbol: 'ABC',
-            decimals: -1,
-          }),
-        'decimals < 0 should fail',
-      );
-      assert.throws(
-        () =>
-          validate({
-            address: '0xd26114cd6EE289AccF82350c8d8487fedB8A0C07',
-            symbol: 'ABC',
-            decimals: 38,
-          }),
-        'decimals > 36 should fail',
-      );
-      assert.throws(
-        () => validate({ address: '0x123', symbol: 'ABC', decimals: 0 }),
-        'invalid address should fail',
       );
     });
   });
