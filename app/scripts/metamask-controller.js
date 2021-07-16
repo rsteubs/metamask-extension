@@ -59,7 +59,6 @@ import EncryptionPublicKeyManager from './lib/encryption-public-key-manager';
 import PersonalMessageManager from './lib/personal-message-manager';
 import TypedMessageManager from './lib/typed-message-manager';
 import TransactionController from './controllers/transactions';
-// import TokenRatesController from './controllers/token-rates';
 import DetectTokensController from './controllers/detect-tokens';
 import SwapsController from './controllers/swaps';
 import { PermissionsController } from './controllers/permissions';
@@ -272,15 +271,15 @@ export default class MetamaskController extends EventEmitter {
       initState.NotificationController,
     );
 
-    // token exchange rate tracker
     // this.tokenRatesController = new TokenRatesController({
-    //   tokensController: this.tokensController,
-    //   getNativeCurrency: () => {
-    //     const { ticker } = this.networkController.getProviderConfig();
-    //     return ticker ?? 'ETH';
-    //   },
-    // });
-
+      //   tokensController: this.tokensController,
+      //   getNativeCurrency: () => {
+        //     const { ticker } = this.networkController.getProviderConfig();
+        //     return ticker ?? 'ETH';
+        //   },
+        // });
+        
+    // token exchange rate tracker
     this.tokenRatesController = new TokenRatesController({
       onTokensStateChange: (listener) =>
         this.tokensController.subscribe(listener),

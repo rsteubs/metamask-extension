@@ -4,11 +4,11 @@ import { ObservableStore } from '@metamask/obs-store';
 import contracts from '@metamask/contract-metadata';
 import BigNumber from 'bignumber.js';
 
+import { TokensController } from '@metamask/controllers';
 import { MAINNET, ROPSTEN } from '../../../shared/constants/network';
 import DetectTokensController from './detect-tokens';
 import NetworkController from './network';
 import PreferencesController from './preferences';
-import { TokensController } from '@metamask/controllers';
 
 describe('DetectTokensController', function () {
   const sandbox = sinon.createSandbox();
@@ -31,9 +31,7 @@ describe('DetectTokensController', function () {
       onPreferencesStateChange: preferences.store.subscribe.bind(
         preferences.store,
       ),
-      onNetworkStateChange: network.store.subscribe.bind(
-        network.store,
-      ),
+      onNetworkStateChange: network.store.subscribe.bind(network.store),
     });
     preferences.setAddresses([
       '0x7e57e2',
@@ -42,9 +40,12 @@ describe('DetectTokensController', function () {
     sandbox
       .stub(network, 'getLatestBlock')
       .callsFake(() => Promise.resolve({}));
-    // sandbox
-    //   .stub(preferences, '_detectIsERC721')
-    //   .returns(Promise.resolve(false));
+    sandbox
+      .stub(tokensController, '_instantiateNewEthersProvider')
+      .returns(null);
+    sandbox
+      .stub(tokensController, '_detectIsERC721')
+      .returns(Promise.resolve(false));
   });
 
   after(function () {
@@ -65,6 +66,7 @@ describe('DetectTokensController', function () {
       preferences,
       network,
       keyringMemStore,
+      tokensController,
     });
     controller.isOpen = true;
     controller.isUnlocked = true;
@@ -88,6 +90,7 @@ describe('DetectTokensController', function () {
       preferences,
       network,
       keyringMemStore,
+      tokensController,
     });
     controller.isOpen = true;
     controller.isUnlocked = true;
@@ -105,6 +108,7 @@ describe('DetectTokensController', function () {
       preferences,
       network,
       keyringMemStore,
+      tokensController,
     });
     controller.isOpen = true;
     controller.isUnlocked = true;
@@ -132,15 +136,15 @@ describe('DetectTokensController', function () {
         ),
       );
 
-    await tokensController.removeToken(tokenAddressToSkip);
-
+    await tokensController.removeAndIgnoreToken(tokenAddressToSkip);
     await controller.detectNewTokens();
 
     assert.deepEqual(tokensController.state.tokens, [
       {
-        address: existingTokenAddress.toLowerCase(),
+        address: existingTokenAddress,
         decimals: existingToken.decimals,
         symbol: existingToken.symbol,
+        image: undefined,
         isERC721: false,
       },
     ]);
@@ -153,6 +157,7 @@ describe('DetectTokensController', function () {
       preferences,
       network,
       keyringMemStore,
+      tokensController,
     });
     controller.isOpen = true;
     controller.isUnlocked = true;
@@ -164,7 +169,7 @@ describe('DetectTokensController', function () {
 
     const existingTokenAddress = erc20ContractAddresses[0];
     const existingToken = contracts[existingTokenAddress];
-    await preferences.addToken(
+    await tokensController.addToken(
       existingTokenAddress,
       existingToken.symbol,
       existingToken.decimals,
@@ -173,14 +178,9 @@ describe('DetectTokensController', function () {
     const tokenAddressToAdd = erc20ContractAddresses[1];
     const tokenToAdd = contracts[tokenAddressToAdd];
 
-    const contractAddresssesToDetect = contractAddresses.filter(
-      (address) => address !== existingTokenAddress,
-    );
-    const indexOfTokenToAdd = contractAddresssesToDetect.indexOf(
-      tokenAddressToAdd,
-    );
+    const indexOfTokenToAdd = contractAddresses.indexOf(tokenAddressToAdd);
 
-    const balances = new Array(contractAddresssesToDetect.length);
+    const balances = new Array(contractAddresses.length);
     balances[indexOfTokenToAdd] = new BigNumber(10);
 
     sandbox
@@ -188,18 +188,19 @@ describe('DetectTokensController', function () {
       .returns(Promise.resolve(balances));
 
     await controller.detectNewTokens();
-
-    assert.deepEqual(preferences.store.getState().tokens, [
+    assert.deepEqual(tokensController.state.tokens, [
       {
-        address: existingTokenAddress.toLowerCase(),
+        address: existingTokenAddress,
         decimals: existingToken.decimals,
         symbol: existingToken.symbol,
         isERC721: false,
+        image: undefined,
       },
       {
-        address: tokenAddressToAdd.toLowerCase(),
+        address: tokenAddressToAdd,
         decimals: tokenToAdd.decimals,
         symbol: tokenToAdd.symbol,
+        image: undefined,
         isERC721: false,
       },
     ]);
@@ -212,6 +213,7 @@ describe('DetectTokensController', function () {
       preferences,
       network,
       keyringMemStore,
+      tokensController,
     });
     controller.isOpen = true;
     controller.isUnlocked = true;
@@ -223,7 +225,7 @@ describe('DetectTokensController', function () {
 
     const existingTokenAddress = erc20ContractAddresses[0];
     const existingToken = contracts[existingTokenAddress];
-    await preferences.addToken(
+    await tokensController.addToken(
       existingTokenAddress,
       existingToken.symbol,
       existingToken.decimals,
@@ -232,14 +234,9 @@ describe('DetectTokensController', function () {
     const tokenAddressToAdd = erc20ContractAddresses[1];
     const tokenToAdd = contracts[tokenAddressToAdd];
 
-    const contractAddresssesToDetect = contractAddresses.filter(
-      (address) => address !== existingTokenAddress,
-    );
-    const indexOfTokenToAdd = contractAddresssesToDetect.indexOf(
-      tokenAddressToAdd,
-    );
+    const indexOfTokenToAdd = contractAddresses.indexOf(tokenAddressToAdd);
 
-    const balances = new Array(contractAddresssesToDetect.length);
+    const balances = new Array(contractAddresses.length);
     balances[indexOfTokenToAdd] = new BigNumber(10);
 
     sandbox
@@ -248,17 +245,19 @@ describe('DetectTokensController', function () {
 
     await controller.detectNewTokens();
 
-    assert.deepEqual(preferences.store.getState().tokens, [
+    assert.deepEqual(tokensController.state.tokens, [
       {
-        address: existingTokenAddress.toLowerCase(),
+        address: existingTokenAddress,
         decimals: existingToken.decimals,
         symbol: existingToken.symbol,
+        image: undefined,
         isERC721: false,
       },
       {
-        address: tokenAddressToAdd.toLowerCase(),
+        address: tokenAddressToAdd,
         decimals: tokenToAdd.decimals,
         symbol: tokenToAdd.symbol,
+        image: undefined,
         isERC721: false,
       },
     ]);
@@ -270,6 +269,7 @@ describe('DetectTokensController', function () {
       preferences,
       network,
       keyringMemStore,
+      tokensController,
     });
     controller.isOpen = true;
     controller.isUnlocked = true;
@@ -286,6 +286,7 @@ describe('DetectTokensController', function () {
       preferences,
       network,
       keyringMemStore,
+      tokensController,
     });
     controller.isOpen = true;
     controller.selectedAddress = '0x0';
@@ -301,6 +302,7 @@ describe('DetectTokensController', function () {
       preferences,
       network,
       keyringMemStore,
+      tokensController,
     });
     controller.isOpen = true;
     controller.isUnlocked = false;
@@ -316,6 +318,7 @@ describe('DetectTokensController', function () {
       preferences,
       network,
       keyringMemStore,
+      tokensController,
     });
     // trigger state update from preferences controller
     await preferences.setSelectedAddress(

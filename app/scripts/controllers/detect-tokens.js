@@ -50,7 +50,7 @@ export default class DetectTokensController {
       if (
         contracts[contractAddress].erc20 &&
         !this.tokenAddresses.includes(contractAddress.toLowerCase()) &&
-        !this.hiddenTokens.includes(contractAddress.toLowerCase())
+        !this.hiddenTokens.find((token) => token.address === contractAddress)
       ) {
         tokensToDetect.push(contractAddress);
       }
@@ -66,17 +66,18 @@ export default class DetectTokensController {
       );
       return;
     }
-
-    tokensToDetect.forEach((tokenAddress, index) => {
-      const balance = result[index];
-      if (balance && !balance.isZero()) {
-        this.tokensController.addToken(
-          tokenAddress,
-          contracts[tokenAddress].symbol,
-          contracts[tokenAddress].decimals,
-        );
-      }
-    });
+    await Promise.all(
+      tokensToDetect.map(async (tokenAddress, index) => {
+        const balance = result[index];
+        if (balance && !balance.isZero()) {
+          await this.tokensController.addToken(
+            tokenAddress,
+            contracts[tokenAddress].symbol,
+            contracts[tokenAddress].decimals,
+          );
+        }
+      }),
+    );
   }
 
   async _getTokenBalances(tokens) {
