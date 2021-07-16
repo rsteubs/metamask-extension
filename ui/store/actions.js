@@ -1257,8 +1257,7 @@ export function addToken(
       dispatch(hideLoadingIndication());
     }
     // dispatch(updateTokens(tokens));
-    // resolve(tokens);
-    // return Promise.resolve(tokens)
+    // return tokens
   };
 }
 

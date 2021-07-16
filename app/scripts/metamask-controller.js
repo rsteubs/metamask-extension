@@ -1284,7 +1284,6 @@ export default class MetamaskController extends EventEmitter {
    */
   async fetchInfoToSync() {
     // Preferences
-    // TODO - ALEX - TEST THIS
     const {
       currentLocale,
       frequentRpcList,
@@ -1317,12 +1316,10 @@ export default class MetamaskController extends EventEmitter {
     });
 
     const preferences = {
-      // accountTokens: filteredAccountTokens,
       currentLocale,
       frequentRpcList,
       identities,
       selectedAddress,
-      // tokens,
     };
 
     const tokensController = {
