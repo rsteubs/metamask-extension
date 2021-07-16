@@ -20,8 +20,6 @@ export default function reduceMetamask(state = {}, action) {
     frequentRpcList: [],
     addressBook: [],
     contractExchangeRates: {},
-    // tokens: [],
-    // pendingTokens: {},
     customNonceValue: '',
     useBlockie: false,
     featureFlags: {},

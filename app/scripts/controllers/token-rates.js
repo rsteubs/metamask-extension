@@ -23,7 +23,7 @@ export default class TokenRatesController {
   constructor({ tokensController, getNativeCurrency } = {}) {
     this.store = new ObservableStore();
     this.getNativeCurrency = getNativeCurrency;
-    this.tokens = tokensController.getState().tokens;
+    this.tokens = tokensController.state.tokens;
     tokensController.subscribe(({ tokens = [] }) => {
       this.tokens = tokens;
     });

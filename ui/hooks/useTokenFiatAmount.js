@@ -34,7 +34,7 @@ export function useTokenFiatAmount(
   const userPrefersShownFiat = useSelector(getShouldShowFiat);
   const showFiat = overrides.showFiat ?? userPrefersShownFiat;
   const tokenExchangeRate =
-    overrides.exchangeRate ?? contractExchangeRates[tokenAddress];
+    overrides.exchangeRate ?? contractExchangeRates[tokenAddress.toLowerCase()];
   const formattedFiat = useMemo(
     () =>
       getTokenFiatAmount(
