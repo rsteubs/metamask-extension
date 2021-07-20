@@ -84,7 +84,6 @@ export default class Home extends PureComponent {
   };
 
   state = {
-    mounted: false,
     canShowBlockageNotification: true,
   };
 
@@ -101,7 +100,6 @@ export default class Home extends PureComponent {
       swapsFetchParams,
       pendingConfirmations,
     } = this.props;
-    this.setState({ mounted: true });
     if (isNotification && totalUnapprovedCount === 0) {
       global.platform.closeCurrentWindow();
     } else if (!isNotification && showAwaitingSwapScreen) {

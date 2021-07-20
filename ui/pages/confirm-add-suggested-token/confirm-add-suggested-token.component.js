@@ -5,6 +5,7 @@ import Identicon from '../../components/ui/identicon';
 import TokenBalance from '../../components/ui/token-balance';
 import { getEnvironmentType } from '../../../app/scripts/lib/util';
 import { ENVIRONMENT_TYPE_NOTIFICATION } from '../../../shared/constants/app';
+import { isEqualCaseInsensitive } from '../../helpers/utils/util';
 
 export default class ConfirmAddSuggestedToken extends Component {
   static contextTypes = {
@@ -184,9 +185,7 @@ export default class ConfirmAddSuggestedToken extends Component {
     const duplicates = suggestedAssets.filter(({ asset }) => {
       const dupes = tokens
         .filter((old) => old.symbol === asset.symbol)
-        .filter(
-          (old) => old.address.toUpperCase() !== asset.address.toUpperCase(),
-        );
+        .filter((old) => !isEqualCaseInsensitive(old.address, asset.address));
       return dupes.length > 0;
     });
     return duplicates.length > 0;

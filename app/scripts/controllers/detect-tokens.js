@@ -5,6 +5,7 @@ import SINGLE_CALL_BALANCES_ABI from 'single-call-balance-checker-abi';
 import { MAINNET_CHAIN_ID } from '../../../shared/constants/network';
 import { SINGLE_CALL_BALANCES_ADDRESS } from '../constants/contracts';
 import { MINUTE } from '../../../shared/constants/time';
+import { isEqualCaseInsensitive } from '../../../ui/helpers/utils/util';
 
 // By default, poll every 3 minutes
 const DEFAULT_INTERVAL = MINUTE * 3;
@@ -50,7 +51,9 @@ export default class DetectTokensController {
       if (
         contracts[contractAddress].erc20 &&
         !this.tokenAddresses.includes(contractAddress.toLowerCase()) &&
-        !this.hiddenTokens.find((token) => token.address === contractAddress)
+        !this.hiddenTokens.find((token) =>
+          isEqualCaseInsensitive(token.address, contractAddress),
+        )
       ) {
         tokensToDetect.push(contractAddress);
       }

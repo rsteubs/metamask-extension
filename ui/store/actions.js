@@ -26,6 +26,7 @@ import {
 } from '../ducks/metamask/metamask';
 import { LISTED_CONTRACT_ADDRESSES } from '../../shared/constants/tokens';
 import { toChecksumHexAddress } from '../../shared/modules/hexstring-utils';
+import { isEqualCaseInsensitive } from '../helpers/utils/util';
 import * as actionConstants from './actionConstants';
 
 let background = null;
@@ -1121,10 +1122,9 @@ export function lockMetamask() {
   };
 }
 
-async function _setSelectedAddress(dispatch, address) {
+async function _setSelectedAddress(address) {
   log.debug(`background.setSelectedAddress`);
-  const tokens = await promisifiedBackground.setSelectedAddress(address);
-  dispatch(updateTokens(tokens));
+  await promisifiedBackground.setSelectedAddress(address);
 }
 
 export function setSelectedAddress(address) {
@@ -1132,7 +1132,7 @@ export function setSelectedAddress(address) {
     dispatch(showLoadingIndication());
     log.debug(`background.setSelectedAddress`);
     try {
-      await _setSelectedAddress(dispatch, address);
+      await _setSelectedAddress(address);
     } catch (error) {
       dispatch(displayWarning(error.message));
       return;
@@ -1256,8 +1256,6 @@ export function addToken(
     } finally {
       dispatch(hideLoadingIndication());
     }
-    // dispatch(updateTokens(tokens));
-    // return tokens
   };
 }
 
@@ -1272,7 +1270,6 @@ export function removeToken(address) {
           reject(err);
           return;
         }
-        // dispatch(updateTokens(tokens));
         resolve(tokens);
       });
     });
@@ -1310,10 +1307,9 @@ export function rejectWatchAsset(suggestedAssetID) {
     }
 
     dispatch(closeCurrentNotificationWindow());
-    // if (getEnvironmentType() === ENVIRONMENT_TYPE_NOTIFICATION) {
-    //   global.platform.closeCurrentWindow();
-    //   return;
-    // }
+    if (getEnvironmentType() === ENVIRONMENT_TYPE_NOTIFICATION) {
+      global.platform.closeCurrentWindow();
+    }
   };
 }
 
@@ -1331,23 +1327,15 @@ export function acceptWatchAsset(suggestedAssetID) {
     }
 
     dispatch(closeCurrentNotificationWindow());
-    // if (getEnvironmentType() === ENVIRONMENT_TYPE_NOTIFICATION) {
-    //   global.platform.closeCurrentWindow();
-    //   return;
-    // }
+    if (getEnvironmentType() === ENVIRONMENT_TYPE_NOTIFICATION) {
+      global.platform.closeCurrentWindow();
+    }
   };
 }
 
 export function addKnownMethodData(fourBytePrefix, methodData) {
   return () => {
     background.addKnownMethodData(fourBytePrefix, methodData);
-  };
-}
-
-export function updateTokens(newTokens) {
-  return {
-    type: actionConstants.UPDATE_TOKENS,
-    newTokens,
   };
 }
 
@@ -2523,8 +2511,8 @@ export function loadingTokenParamsFinished() {
 export function getTokenParams(tokenAddress) {
   return (dispatch, getState) => {
     const existingTokens = getState().metamask.tokens;
-    const existingToken = existingTokens.find(
-      ({ address }) => tokenAddress === address,
+    const existingToken = existingTokens.find(({ address }) =>
+      isEqualCaseInsensitive(tokenAddress, address),
     );
 
     if (existingToken) {

@@ -498,7 +498,7 @@ export default class MetamaskController extends EventEmitter {
       try {
         await this.currencyRateController.setNativeCurrency(ticker);
       } catch (error) {
-        //   // TODO: Handle failure to get conversion rate more gracefully
+        // TODO: Handle failure to get conversion rate more gracefully
         console.error(error);
       }
     });
